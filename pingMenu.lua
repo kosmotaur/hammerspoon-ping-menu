@@ -5,27 +5,29 @@ local function splitByNewline(str)
   helper((str:gsub('(.-)\n', helper)))
   return t
 end
-local function updatePing()
-  local p = hs.network.ping('bbc.co.uk')
-  hs.timer.doAfter(5, function()
-      p:cancel()
-      local summary = p:summary()
-      local avg = summary:match('%/(%d+)%.%d+%/')
-      local splitSummary = splitByNewline(summary)
-      local menu = {}
+local function updateMenubar(summary)
+  local avg = summary:match('%/(%d+)%.%d+%/')
+  local splitSummary = splitByNewline(summary)
+  local menu = {}
 
-      for i, v in ipairs(splitSummary) do
-        table.insert(menu, {
-          title = v,
-          disabled = true
-        })
-      end
+  for i, v in ipairs(splitSummary) do
+    table.insert(menu, {
+      title = v,
+      disabled = true
+    })
+  end
 
-      pingMenubar:setMenu(menu)
-      pingMenubar:setTitle(avg..'ms')
-    end)
+  pingMenubar:setMenu(menu)
+  pingMenubar:setTitle(avg..'ms')
+end
+local function measurePing()
+  local p = hs.network.ping('bbc.co.uk', 10, 0.5, 5.0, 'any', function(pingObj, message)
+    if message == 'didFinish' then
+      updateMenubar(pingObj:summary())
+      measurePing()
+    end
+  end)
 end
 
 pingMenubar:setTitle('ping')
-hs.timer.doEvery(5, updatePing)
-updatePing()
+measurePing()
