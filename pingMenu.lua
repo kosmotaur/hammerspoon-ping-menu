@@ -28,6 +28,18 @@ local function measurePing()
     end
   end)
 end
+local function setIcon()
+  local icon = hs.image.imageFromPath(os.getenv('HOME') .. '/.hammerspoon/hammerspoon-ping-menu/ping.png'):setSize({w=16,h=16})
 
-pingMenubar:setTitle('ping')
+  pingMenubar:setIcon(icon)
+end
+
+setIcon()
+pingMenubar:setMenu({
+  {
+    title = 'measuring ping',
+    disabled = true
+  }
+})
+
 measurePing()
